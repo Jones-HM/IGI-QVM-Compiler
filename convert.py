@@ -25,11 +25,7 @@ def convert_qvm(qvm_version=7):
             count += 1
 
         print(f"Conversion completed. Total files converted: {count}")
+        return dstpath
 
     except Exception as e:
         print(f"Error occurred: {str(e)}")
-
-
-if __name__ == "__main__":
-    qvm_version = 7
-    convert_qvm(qvm_version)

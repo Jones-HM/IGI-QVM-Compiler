@@ -1,4 +1,4 @@
-from ast import (
+from ast_qvm import (
     LiteralNumber,
     LiteralConst,
     LiteralString,

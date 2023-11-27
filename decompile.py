@@ -1,7 +1,7 @@
 import os
 from utils import fs
 from format.qvm import QVM
-import ast
+import ast_qvm
 import qsc
 
 
@@ -14,7 +14,7 @@ def decompile_qvm():
         for srcpath in fs.walkdir(src_folder, '*.qvm'):
             qvmfile = QVM()
             qvmfile.load(srcpath)
-            qvmtree = ast.fromfile(qvmfile)
+            qvmtree = ast_qvm.fromfile(qvmfile)
             qvmtext = qsc.fromtree(qvmtree)
 
             dstfile = srcpath.replace(src_folder, dst_folder, 1).replace('.qvm', '.qsc')
@@ -26,9 +26,6 @@ def decompile_qvm():
             count += 1
 
         print('Decompiled: {0}'.format(count))
+        return dstfile
     except Exception as e:
         print('Error: {0}'.format(str(e)))
-
-
-if __name__ == "__main__":
-    decompile_qvm()
