@@ -1,0 +1,12 @@
+# Ignore Python cache and compiled files
+*.pyc
+__pycache__/
+
+# Ignore text files
+*.txt
+
+# Ignore .qsc and .qvm files
+*.qsc
+*.qvm
+
+.DS_Store
