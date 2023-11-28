@@ -3,8 +3,8 @@ import logging
 import traceback
 import streamlit as st
 import os
-from decompile import decompile_qvm
-from convert import convert_qvm
+from libs.decompile import decompile_qvm
+from libs.convert import convert_qvm
 
 def initialize_session_state():
     if "file" not in st.session_state:
@@ -45,13 +45,16 @@ def generate_download_link(data=None, filename="download.txt", file_extension="t
         logging.info(f"Downloading code to file: {filename} with extension: {file_extension}")
 
         # Check if data is binary or text
-        if isinstance(data, bytes):
-            # Data is binary, no need to encode it as utf-8
-            b64_data = base64.b64encode(data).decode()
-        else:
-            # Data is text, encode it as utf-8 before base64 encoding
-            b64_data = base64.b64encode(data.encode('utf-8')).decode()
-
+        try:
+            if isinstance(data, bytes):
+                # Data is binary, no need to encode it as utf-8
+                b64_data = base64.b64encode(data).decode()
+            else:
+                # Data is text, encode it as utf-8 before base64 encoding
+                b64_data = base64.b64encode(data.encode('utf-8')).decode()
+        except Exception:
+            logging.error(f"Error in encoding data: {traceback.format_exc()}")
+        
         href = f"data:{file_extension};base64,{b64_data}"  # creating the href for anchor tag
         link = f'<a id="download_link" href="{href}" download="{filename}">Download Code</a>'  # creating the anchor tag
 
@@ -68,70 +71,92 @@ def generate_download_link(data=None, filename="download.txt", file_extension="t
         logging.error(f"Error in code downloading: {traceback.format_exc()}")
 
 
+import streamlit as st
+import os
+import base64
+import logging
+import traceback
+from libs.decompile import decompile_qvm
+from libs.convert import convert_qvm
+
+# Other functions like 'initialize_session_state', 'clear_resources', 'generate_download_link' go here
+
 def main():
-    st.title("Project IGI Compiler - HM")
+    st.title("QVM File Handler")
     initialize_session_state()
     clear_resources('input')
 
-    uploaded_file = st.file_uploader("Choose a file")
+    uploaded_file = st.file_uploader("Choose a file", type=['qvm'])
     if uploaded_file is not None:
         with open(os.path.join('input', uploaded_file.name), 'wb') as file:
             file.write(uploaded_file.getvalue())
         st.session_state.file = uploaded_file.name
-    
-    if st.form(key='conversion_form'):
-        col1,col2,col3,col4 = st.columns(4)
+
+    with st.form(key='conversion_form'):
+        col1, col2,_,col3, col4 = st.columns([2, 2, 1, 2, 2],gap='small')
         
         with col1:
-            if st.button('Convert'):
-                try:
-                    st.session_state.output_file = convert_qvm(st.session_state.version)
-                    
-                    convert_data = None
-                    with open(st.session_state.output_file, 'rb') as file:
-                        convert_data = file.read()
-                    
-                    st.session_state.download_link = generate_download_link(convert_data, filename=st.session_state.output_file, auto_click=True)
-                
-                except Exception as exception:
-                    raise Exception("An error occurred while converting the file: " + str(exception))
+            convert_clicked = st.form_submit_button('Convert')
         
         with col2:
-            st.session_state.version = st.number_input('QVM version', min_value=5, max_value=7, step=2)
-                     
+            # Use a placeholder to center the number input
+            with st.container():
+                st.session_state.version = st.number_input('Version', min_value=5, max_value=7, step=2,label_visibility='collapsed')
+        
         with col3:
-            if st.button('Decompile'):
-                try:
-                    st.session_state.output_file = decompile_qvm()
-                    
-                    with open(st.session_state.output_file, 'rb') as file:
-                        st.session_state.code = file.read()
-                        
-                except Exception as exception:
-                    raise Exception("An error occurred while decompiling the file: " + str(exception))
+            decompile_clicked = st.form_submit_button('Decompile')
+        
         with col4:
-            if st.button('Download'):
-                st.session_state.download_link = generate_download_link(st.session_state.code, filename=st.session_state.output_file, auto_click=True)
-                import time
-                time.sleep(3)
-                clear_resources('output')
+            download_clicked = st.form_submit_button('Download')
+
+    # ... rest of the code ...
+
+
+    # Conversion process
+    if convert_clicked and st.session_state.file is not None:
+        try:
+            st.session_state.output_file = convert_qvm(st.session_state.version)
+            with open(st.session_state.output_file, 'rb') as file:
+                convert_data = file.read()
+            st.session_state.download_link = generate_download_link(
+                convert_data, filename=st.session_state.output_file, auto_click=True
+            )
+        except Exception as e:
+            st.error(f"An error occurred during conversion: {e}")
+            logging.error(f"Conversion error: {traceback.format_exc()}")
+
+    # Decompile process
+    if decompile_clicked and st.session_state.file is not None:
+        try:
+            st.session_state.output_file = decompile_qvm()
+            with open(st.session_state.output_file, 'r') as file:
+                st.session_state.code = file.read()
+                
+        except Exception as e:
+            st.error(f"An error occurred during decompiling: {e}")
+            logging.error(f"Decompilation error: {traceback.format_exc()}")
+
+    # Download process
+    if download_clicked and st.session_state.code is not None:
+        try:
+            st.session_state.download_link = generate_download_link(
+                st.session_state.code, filename=st.session_state.output_file, auto_click=True
+            )
+        except Exception as e:
+            st.error(f"An error occurred during download: {e}")
+            logging.error(f"Download error: {traceback.format_exc()}")
+
+    # Display the output code or conversion success message
+    if st.session_state.code is not None:
+        st.code(st.session_state.code, language='cpp')
         
-        # Check if input file is uploaded
-        if st.session_state.file is None:
-            st.toast("Please upload a file.", icon="❌")
-            st.error("Please upload a file.")
-            clear_resources('input')
-            clear_resources('output')
-        
-        # Display the output.
-        if st.session_state.code is not None:
-                filename = os.path.basename(st.session_state.output_file)
-                with open(os.path.join('output', filename), 'r') as file:
-                    st.session_state.code = file.read()
-                    st.code(st.session_state.code, language='cpp')
-        
+    elif "qvm" in st.session_state.output_file and st.session_state.download_link is not None:
+        st.success("File converted successfully.")
+
 if __name__ == "__main__":
     try:
         main()
-    except Exception as exception:
-        st.error(f'An error occurred: {str(exception)}')
+    except Exception as e:
+        st.error(f'An error occurred: {e}')
+        logging.error(f"Main function error: {traceback.format_exc()}")
+

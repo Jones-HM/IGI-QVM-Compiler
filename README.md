@@ -9,7 +9,7 @@ Our user-friendly interface makes it easy to upload and download QVM files. Plus
 Get ready to revolutionize your gaming experience with the Project IGI Compiler! 🎉
 
 ## Demo 📸
-![Demo](https://github.com/haseeb-heaven/IGI-QVM-Compiler/resources/igi-compiler.png)
+![Demo](https://raw.githubusercontent.com/haseeb-heaven/IGI-QVM-Compiler/main/resources/igi-compiler.png)
 
 ## Features 🌟
 
