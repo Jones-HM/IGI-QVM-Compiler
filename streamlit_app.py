@@ -118,9 +118,7 @@ def main():
             st.session_state.output_file = convert_qvm(st.session_state.version)
             with open(st.session_state.output_file, 'rb') as file:
                 convert_data = file.read()
-            st.session_state.download_link = generate_download_link(
-                convert_data, filename=st.session_state.output_file, auto_click=True
-            )
+            st.session_state.download_link = generate_download_link(convert_data, filename=st.session_state.output_file, auto_click=True)
         except Exception as e:
             st.error(f"An error occurred during conversion: {e}")
             logging.error(f"Conversion error: {traceback.format_exc()}")
@@ -139,9 +137,7 @@ def main():
     # Download process
     if download_clicked and st.session_state.code is not None:
         try:
-            st.session_state.download_link = generate_download_link(
-                st.session_state.code, filename=st.session_state.output_file, auto_click=True
-            )
+            st.session_state.download_link = generate_download_link(st.session_state.code, filename=st.session_state.output_file, auto_click=True)
         except Exception as e:
             st.error(f"An error occurred during download: {e}")
             logging.error(f"Download error: {traceback.format_exc()}")
@@ -150,7 +146,7 @@ def main():
     if st.session_state.code is not None:
         st.code(st.session_state.code, language='cpp')
         
-    elif "qvm" in st.session_state.output_file and st.session_state.download_link is not None:
+    elif "qvm" in st.session_state.output_file:
         st.success("File converted successfully.")
 
 if __name__ == "__main__":
