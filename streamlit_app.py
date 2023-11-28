@@ -1,8 +1,8 @@
+import streamlit as st
+import os
 import base64
 import logging
 import traceback
-import streamlit as st
-import os
 from libs.decompile import decompile_qvm
 from libs.convert import convert_qvm
 
@@ -20,9 +20,20 @@ def initialize_session_state():
     if "download_link" not in st.session_state:
         st.session_state.download_link = None
         
+import os
+
 def clear_resources(directory):
-    for file in os.listdir(directory):
-        os.remove(os.path.join(directory, file))
+    # Check if the directory exists
+    if not os.path.exists(directory):
+        # Create the directory if it does not exist
+        os.makedirs(directory)
+    else:
+        # If the directory exists, remove all files within it
+        for file in os.listdir(directory):
+            file_path = os.path.join(directory, file)
+            # Check if it's a file and not a directory before removing
+            if os.path.isfile(file_path):
+                os.remove(file_path)
 
 def generate_download_link(data=None, filename="download.txt", file_extension="text/plain", auto_click=False):
     try:
@@ -71,21 +82,13 @@ def generate_download_link(data=None, filename="download.txt", file_extension="t
         logging.error(f"Error in code downloading: {traceback.format_exc()}")
 
 
-import streamlit as st
-import os
-import base64
-import logging
-import traceback
-from libs.decompile import decompile_qvm
-from libs.convert import convert_qvm
-
-# Other functions like 'initialize_session_state', 'clear_resources', 'generate_download_link' go here
 
 def main():
-    st.title("QVM File Handler")
+    st.title("Project IGI Compiler - HM")
     initialize_session_state()
     clear_resources('input')
-
+    clear_resources('output')
+    
     uploaded_file = st.file_uploader("Choose a file", type=['qvm'])
     if uploaded_file is not None:
         with open(os.path.join('input', uploaded_file.name), 'wb') as file:
@@ -108,9 +111,6 @@ def main():
         
         with col4:
             download_clicked = st.form_submit_button('Download')
-
-    # ... rest of the code ...
-
 
     # Conversion process
     if convert_clicked and st.session_state.file is not None:
