@@ -145,9 +145,10 @@ def main():
     # Display the output code or conversion success message
     if st.session_state.code is not None:
         st.code(st.session_state.code, language='cpp')
-        
-    elif "qvm" in st.session_state.output_file:
-        st.success("File converted successfully.")
+
+    if st.session_state.output_file is not None:
+        if "qvm" in st.session_state.output_file:
+            st.success("File converted successfully.")
 
 if __name__ == "__main__":
     try:
