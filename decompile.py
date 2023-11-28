@@ -24,8 +24,7 @@ def decompile_qvm():
                 o.write(qvmtext)
 
             count += 1
-
-        print('Decompiled: {0}'.format(count))
+        
         return dstfile
-    except Exception as e:
-        print('Error: {0}'.format(str(e)))
+    except Exception as exception:
+        print('Error: {0}'.format(str(exception)))
